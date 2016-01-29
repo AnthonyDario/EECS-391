@@ -29,8 +29,17 @@ public class AstarAgent extends Agent {
         }
 
         // returns if two MapLocations are the same
-        public boolean equals(MapLocation loc) {
-            return this.x == loc.x && this.y == loc.y;
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return this == null;
+            }
+
+            if (obj instanceof MapLocation) {
+                MapLocation loc = (MapLocation) obj;
+                return this.x == loc.x && this.y == loc.y;
+            }
+
+            return false;
         }
 
         // class that compares two MapLocations by their heuristic
@@ -331,23 +340,42 @@ public class AstarAgent extends Agent {
         Comparator comparator = start.comparator(start, goal);
         PriorityQueue<MapLocation> openList = 
             new PriorityQueue<MapLocation>(11, comparator);
-        ArrayList closedList = new ArrayList<MapLocation>();
+        ArrayList<MapLocation> closedList = new ArrayList<MapLocation>();
 
-        openList.add(start);
+        //openList.add(start);
+        int count = 0;
 
-        while (openList.isEmpty()) {
+        closedList.add(start);
+        System.out.println(new MapLocation(start.x, start.y, null, 0).equals(start));
+        System.out.println(start.equals(new MapLocation(start.x, start.y, null, 0)));
+        System.out.println(closedList.contains(start));
+        System.out.println(closedList.contains(new MapLocation(start.x, start.y, null, 0)));
 
-           MapLocation currentLocation = openList.poll();
-           if (currentLocation.equals(goal)) {
+        while (!openList.isEmpty()) {
+
+           MapLocation currentLoc = openList.poll();
+           System.out.println("checking: (" + currentLoc.x + 
+                              ", " + currentLoc.y + ")");
+           if (currentLoc.equals(goal)) {
+                System.out.println("success!!");
                 // we are done!
                 break;
            } else {
-                MapLocation[] successors = expandState(currentLocation);
-                closedList.add(currentLocation);
+                MapLocation[] successors = expandState(currentLoc);
+                closedList.add(currentLoc);
+
                 for (MapLocation successor : successors) {
-                    if (!closedList.contains(successor)) {
+                    if (successor != null) {
+                        System.out.println("Location (" + successor.x + ", " + successor.y + "): " + closedList.contains(successor));
+                    }
+                    if (successor != null && !closedList.contains(successor)) {
                         openList.add(successor);
                     }
+                }
+
+                count++;
+                if (count  > 10) {
+                    break;
                 }
            }
         }
@@ -367,7 +395,6 @@ public class AstarAgent extends Agent {
      */
     private MapLocation[] expandState(MapLocation loc) {
 
-
         MapLocation north = new MapLocation(loc.x, loc.y - 1, null, 0);
         MapLocation south = new MapLocation(loc.x, loc.y + 1, null, 0);
         MapLocation west = new MapLocation(loc.x - 1, loc.y, null, 0);
@@ -379,6 +406,13 @@ public class AstarAgent extends Agent {
 
         MapLocation[] successors = {north, south, east, west, 
                                     northEast, northWest, southEast, southWest};
+
+        for (int i = 0; i < successors.length; i++) { 
+            if (successors[i].x < 0 || successors[i].y < 0 ||
+                successors[i].x > 20 || successors[i].y > 20) {
+                successors[i] = null;
+            }
+        }
 
         return successors;
     }
