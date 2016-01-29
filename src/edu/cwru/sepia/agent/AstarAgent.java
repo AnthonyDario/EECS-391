@@ -42,6 +42,10 @@ public class AstarAgent extends Agent {
             return false;
         }
 
+        public String toString() {
+            return "(" + x + ", " + y + ")";
+        }
+
         // class that compares two MapLocations by their heuristic
         class LocationComparator implements Comparator<MapLocation> {
 
@@ -55,7 +59,7 @@ public class AstarAgent extends Agent {
 
             public int compare(MapLocation o1, MapLocation o2) {
 
-                return o1.aDist - o2.aDist;
+                return o1.aDist < o2.aDist ? -1 : 1;
                 
             }
 
@@ -342,14 +346,7 @@ public class AstarAgent extends Agent {
             new PriorityQueue<MapLocation>(11, comparator);
         ArrayList<MapLocation> closedList = new ArrayList<MapLocation>();
 
-        //openList.add(start);
-        int count = 0;
-
-        closedList.add(start);
-        System.out.println(new MapLocation(start.x, start.y, null, 0).equals(start));
-        System.out.println(start.equals(new MapLocation(start.x, start.y, null, 0)));
-        System.out.println(closedList.contains(start));
-        System.out.println(closedList.contains(new MapLocation(start.x, start.y, null, 0)));
+        openList.add(start);
 
         while (!openList.isEmpty()) {
 
@@ -361,22 +358,21 @@ public class AstarAgent extends Agent {
                 // we are done!
                 break;
            } else {
-                MapLocation[] successors = expandState(currentLoc);
+                MapLocation[] successors = expandState(currentLoc, goal);
                 closedList.add(currentLoc);
 
                 for (MapLocation successor : successors) {
-                    if (successor != null) {
-                        System.out.println("Location (" + successor.x + ", " + successor.y + "): " + closedList.contains(successor));
-                    }
                     if (successor != null && !closedList.contains(successor)) {
                         openList.add(successor);
                     }
                 }
 
-                count++;
-                if (count  > 10) {
-                    break;
+                /*
+                for (MapLocation l : openList ) {
+                    System.out.println("\tlocation (" + l.x + ", " + l.y + "): " + l.aDist);
                 }
+                */
+
            }
         }
 
@@ -393,7 +389,7 @@ public class AstarAgent extends Agent {
      * @param location
      * @return the successor nodes
      */
-    private MapLocation[] expandState(MapLocation loc) {
+    private MapLocation[] expandState(MapLocation loc, MapLocation start) {
 
         MapLocation north = new MapLocation(loc.x, loc.y - 1, null, 0);
         MapLocation south = new MapLocation(loc.x, loc.y + 1, null, 0);
@@ -411,6 +407,8 @@ public class AstarAgent extends Agent {
             if (successors[i].x < 0 || successors[i].y < 0 ||
                 successors[i].x > 20 || successors[i].y > 20) {
                 successors[i] = null;
+            } else {
+                successors[i].aDist = chebyshev(successors[i], start);
             }
         }
 
@@ -426,12 +424,15 @@ public class AstarAgent extends Agent {
      */
     private int chebyshev(MapLocation start, MapLocation goal) {
 
+        //System.out.println("goal: " + goal + " start: " + start);
+
         int deltaX = goal.x - start.x;
         int deltaY = goal.y - start.y;
 
         deltaX = deltaX < 0 ? deltaX * -1 : deltaX;
         deltaY = deltaY < 0 ? deltaY * -1 : deltaY;
         
+        //System.out.println("y: " + deltaY + " x: " + deltaX + " " + start);
         return deltaX < deltaY ? deltaY : deltaX;
     }
 
