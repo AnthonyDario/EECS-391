@@ -314,8 +314,11 @@ public class AstarAgent extends Agent {
 
         int deltaX = goal.x - start.x;
         int deltaY = goal.y - start.y;
+
+        deltaX = deltaX < 0 ? deltaX * -1 : deltaX;
+        deltaY = deltaY < 0 ? deltaY * -1 : deltaY;
         
-       return 0;
+        return deltaX < deltaY ? deltaY : deltaX;
     }
 
     /**
