@@ -1,2 +1,5 @@
-*.class
-*.jar
+lib/Sepia.jar
+src/edu/cwru/sepia/agent/AstarAgent$MapLocation.class
+src/edu/cwru/sepia/agent/AstarAgent$MapLocation$LocationComparator.class
+src/edu/cwru/sepia/agent/AstarAgent.class
+

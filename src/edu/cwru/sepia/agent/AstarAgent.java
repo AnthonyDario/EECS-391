@@ -22,6 +22,34 @@ public class AstarAgent extends Agent {
             this.x = x;
             this.y = y;
         }
+
+        public Comparator comparator(MapLocation start, MapLocation goal) {
+
+            return new LocationComparator(start, goal);
+        }
+
+        // class that compares two MapLocations by their heuristic
+        class LocationComparator implements Comparator<MapLocation> {
+
+            MapLocation start;
+            MapLocation goal;
+
+            public LocationComparator(MapLocation start, MapLocation goal) {
+                this.start = start;
+                this.goal = goal;
+            }
+
+            public int compare(MapLocation o1, MapLocation o2) {
+                int firstDist = chebyshev(o1, goal);
+                int secondDist = chebyshev(o2, goal);
+
+                return firstDist < secondDist ? firstDist : secondDist;
+            }
+
+            public boolean equals(Object obj) {
+                return false;
+            }
+        }
     }
 
     Stack<MapLocation> path;
@@ -295,6 +323,9 @@ public class AstarAgent extends Agent {
      */
     private Stack<MapLocation> AstarSearch(MapLocation start, MapLocation goal, int xExtent, int yExtent, MapLocation enemyFootmanLoc, Set<MapLocation> resourceLocations)
     {
+
+        Comparator comparator = start.comparator(start, goal);
+        PriorityQueue queue = new PriorityQueue(11, comparator);
 
         Stack path = new Stack<MapLocation>();
         path.push(new MapLocation(start.x + 2, start.y, null, 0));
