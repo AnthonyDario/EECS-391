@@ -343,9 +343,13 @@ public class AstarAgent extends Agent {
                 break;
            } else {
                 MapLocation[] successors = expandState(currentLocation);
-
+                closedList.add(currentLocation);
+                for (MapLocation successor : successors) {
+                    if (!closedList.contains(successor)) {
+                        openList.add(successor);
+                    }
+                }
            }
-
         }
 
         Stack path = new Stack<MapLocation>();
