@@ -15,7 +15,7 @@ public class AstarAgent extends Agent {
 
     class MapLocation
     {
-        public int x, y;
+        public int x, y, aDist;
 
         public MapLocation(int x, int y, MapLocation cameFrom, float cost)
         {
@@ -26,6 +26,11 @@ public class AstarAgent extends Agent {
         public Comparator comparator(MapLocation start, MapLocation goal) {
 
             return new LocationComparator(start, goal);
+        }
+
+        // returns if two MapLocations are the same
+        public boolean equals(MapLocation loc) {
+            return this.x == loc.x && this.y == loc.y;
         }
 
         // class that compares two MapLocations by their heuristic
@@ -40,14 +45,13 @@ public class AstarAgent extends Agent {
             }
 
             public int compare(MapLocation o1, MapLocation o2) {
-                int firstDist = chebyshev(o1, goal);
-                int secondDist = chebyshev(o2, goal);
 
-                return firstDist < secondDist ? firstDist : secondDist;
+                return o1.aDist - o2.aDist;
+                
             }
 
             public boolean equals(Object obj) {
-                return false;
+                return false; 
             }
         }
     }
@@ -325,13 +329,54 @@ public class AstarAgent extends Agent {
     {
 
         Comparator comparator = start.comparator(start, goal);
-        PriorityQueue queue = new PriorityQueue(11, comparator);
+        PriorityQueue<MapLocation> openList = 
+            new PriorityQueue<MapLocation>(11, comparator);
+        ArrayList closedList = new ArrayList<MapLocation>();
+
+        openList.add(start);
+
+        while (openList.isEmpty()) {
+
+           MapLocation currentLocation = openList.poll();
+           if (currentLocation.equals(goal)) {
+                // we are done!
+                break;
+           } else {
+                MapLocation[] successors = expandState(currentLocation);
+
+           }
+
+        }
 
         Stack path = new Stack<MapLocation>();
         path.push(new MapLocation(start.x + 2, start.y, null, 0));
         path.push(new MapLocation(start.x + 1, start.y, null, 0));
         // return an empty path
         return path;
+    }
+
+    /**
+     * returns all of the successor nodes of a MapLocation
+     *
+     * @param location
+     * @return the successor nodes
+     */
+    private MapLocation[] expandState(MapLocation loc) {
+
+
+        MapLocation north = new MapLocation(loc.x, loc.y - 1, null, 0);
+        MapLocation south = new MapLocation(loc.x, loc.y + 1, null, 0);
+        MapLocation west = new MapLocation(loc.x - 1, loc.y, null, 0);
+        MapLocation east = new MapLocation(loc.x + 1, loc.y, null, 0);
+        MapLocation northWest = new MapLocation(loc.x - 1, loc.y - 1, null, 0);
+        MapLocation northEast = new MapLocation(loc.x + 1, loc.y - 1, null, 0);
+        MapLocation southWest = new MapLocation(loc.x - 1, loc.y + 1, null, 0);
+        MapLocation southEast = new MapLocation(loc.x + 1, loc.y + 1, null, 0);
+
+        MapLocation[] successors = {north, south, east, west, 
+                                    northEast, northWest, southEast, southWest};
+
+        return successors;
     }
 
     /**
