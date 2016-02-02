@@ -23,11 +23,6 @@ public class AstarAgent extends Agent {
             this.y = y;
         }
 
-        public Comparator comparator(MapLocation start, MapLocation goal) {
-
-            return new LocationComparator(start, goal);
-        }
-
         public int hashCode() {
             int hash = 17;
             hash = 31 * hash + x;
@@ -58,27 +53,6 @@ public class AstarAgent extends Agent {
             return "(" + x + ", " + y + ")";
         }
 
-        // class that compares two MapLocations by their heuristic
-        class LocationComparator implements Comparator<MapLocation> {
-
-            MapLocation start;
-            MapLocation goal;
-
-            public LocationComparator(MapLocation start, MapLocation goal) {
-                this.start = start;
-                this.goal = goal;
-            }
-
-            public int compare(MapLocation o1, MapLocation o2) {
-
-                return o1.aDist < o2.aDist ? -1 : 1;
-                
-            }
-
-            public boolean equals(Object obj) {
-                return false; 
-            }
-        }
     }
 
     Stack<MapLocation> path;
@@ -353,47 +327,93 @@ public class AstarAgent extends Agent {
     private Stack<MapLocation> AstarSearch(MapLocation start, MapLocation goal, int xExtent, int yExtent, MapLocation enemyFootmanLoc, Set<MapLocation> resourceLocations)
     {
 
-        // setting up 
-        Comparator comparator = start.comparator(start, goal);
-        PriorityQueue<MapLocation> openList = 
-            new PriorityQueue<MapLocation>(11, comparator);
+        // search Lists
+        Comparator comparator = pathComparator(start, goal);
+        PriorityQueue<Stack<MapLocation>> openList = 
+            new PriorityQueue<Stack<MapLocation>>(11, comparator);
 
         ArrayList<MapLocation> closedList = new ArrayList<MapLocation>();
-        openList.add(start);
+        Stack<MapLocation> finalPath = new Stack<MapLocation>();
+        Stack<MapLocation> initialPath = new Stack<MapLocation>();
+        start.aDist = chebyshev(start, goal);
 
+        initialPath.add(start);
+        openList.add(initialPath);
 
         // The search
         while (!openList.isEmpty()) {
 
-           MapLocation currentLoc = openList.poll();
-           System.out.println("checking: (" + currentLoc.x + 
-                              ", " + currentLoc.y + ")");
-           if (currentLoc.equals(goal)) {
+            Stack<MapLocation> currentPath = openList.poll();
+            MapLocation currentLoc = currentPath.peek(); 
+            System.out.println("checking: (" + currentLoc.x + 
+                              ", " + currentLoc.y + "):");
+
+            if (currentLoc.equals(goal)) {
+                // found the goal
                 System.out.println("success!!");
-                // we are done!
+                while (!currentPath.isEmpty()) {
+                    finalPath.push(currentPath.pop());
+                }
                 break;
-           } else {
+            } else {
+                // didn't find the goal
                 MapLocation[] successors = 
-                expandState(currentLoc, goal, xExtent, yExtent);
+                    expandState(currentLoc, goal, xExtent, yExtent);
 
                 closedList.add(currentLoc);
 
                 for (MapLocation successor : successors) {
                     if (successor != null  && !closedList.contains(successor) &&
                         !resourceLocations.contains(successor)) {
-                        openList.add(successor);
+
+                        Stack<MapLocation> newPath = (Stack<MapLocation>)currentPath.clone();
+                        newPath.push(successor);
+                        openList.add(newPath);
                     }
                 }
 
-           }
+            }
         }
 
         // return the path
-        Stack path = new Stack<MapLocation>();
-        path.push(new MapLocation(start.x + 2, start.y, null, 0));
-        path.push(new MapLocation(start.x + 1, start.y, null, 0));
-        // return an empty path
-        return path;
+        return finalPath;
+    }
+
+    /**
+     * returns a comparator for lists of locations.
+     * 
+     * @return the comparator
+     */
+    private Comparator pathComparator(MapLocation start, MapLocation goal) {
+
+
+        // class that compares two MapLocations by their heuristic
+        class PathComparator implements Comparator<Stack<MapLocation>> {
+
+            MapLocation start;
+            MapLocation goal;
+
+            public PathComparator(MapLocation start, MapLocation goal) {
+                this.start = start;
+                this.goal = goal;
+            }
+
+            public int compare(Stack<MapLocation> o1, Stack<MapLocation> o2) {
+    
+                int dist1 = o1.size();
+                int dist2 = o1.size();
+
+                return  dist1 + o1.peek().aDist < 
+                        dist2 + o2.peek().aDist ? -1 : 1;
+                
+            }
+
+            public boolean equals(Object obj) {
+                return false; 
+            }
+        }
+
+        return new PathComparator(start, goal);
     }
 
     /**
@@ -408,13 +428,14 @@ public class AstarAgent extends Agent {
         MapLocation south       = new MapLocation(loc.x, loc.y + 1, null, 0);
         MapLocation west        = new MapLocation(loc.x - 1, loc.y, null, 0);
         MapLocation east        = new MapLocation(loc.x + 1, loc.y, null, 0);
+        /*
         MapLocation northWest   = new MapLocation(loc.x - 1, loc.y - 1, null, 0);
         MapLocation northEast   = new MapLocation(loc.x + 1, loc.y - 1, null, 0);
         MapLocation southWest   = new MapLocation(loc.x - 1, loc.y + 1, null, 0);
         MapLocation southEast   = new MapLocation(loc.x + 1, loc.y + 1, null, 0);
-
-        MapLocation[] successors = {north, south, east, west, 
-                                    northEast, northWest, southEast, southWest};
+        */
+        MapLocation[] successors = {north, south, east, west};
+                                    //northEast, northWest, southEast, southWest};
 
         for (int i = 0; i < successors.length; i++) { 
             if ( successors[i].x < 0 || successors[i].x > xExtent ||
@@ -432,9 +453,9 @@ public class AstarAgent extends Agent {
     /**
      * Calculates the Chebyshev distance
      *
-     * @param start
-     * @param goal
-     * @return the Chebyshev distance
+     * @param start the node we are one
+     * @param goal  the node we want to get to
+     * @return      the Chebyshev distance
      */
     private int chebyshev(MapLocation start, MapLocation goal) {
 
