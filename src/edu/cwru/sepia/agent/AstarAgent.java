@@ -243,10 +243,6 @@ public class AstarAgent extends Agent {
     private boolean shouldReplanPath(State.StateView state, History.HistoryView history, Stack<MapLocation> currentPath)
     {
         MapLocation nextMove = currentPath.peek();
-
-        if (state.isUnitAt(nextMove.x, nextMove.y)) {
-            System.out.println("replanning");
-        }
         return state.isUnitAt(nextMove.x, nextMove.y);
 
     }
@@ -356,7 +352,6 @@ public class AstarAgent extends Agent {
                 while (!currentPath.isEmpty()) {
                     finalPath.push(currentPath.pop());
                 }
-                finalPath.pop();
                 break;
             } else {
                 // didn't find the goal
@@ -366,8 +361,14 @@ public class AstarAgent extends Agent {
                 closedList.add(currentLoc);
 
                 for (MapLocation successor : successors) {
+
+                    if (openList.contains(successor)) {
+                        System.out.println("true");
+                    }
+
                     if (successor != null  && !closedList.contains(successor) &&
-                        !resourceLocations.contains(successor)) {
+                        !resourceLocations.contains(successor) && 
+                        !alreadyPath(openList, successor)) { 
 
                         Stack<MapLocation> newPath = 
                             (Stack<MapLocation>)currentPath.clone();
@@ -409,14 +410,12 @@ public class AstarAgent extends Agent {
             public int compare(Stack<MapLocation> o1, Stack<MapLocation> o2) {
     
                 int dist1 = o1.size();
-                int dist2 = o1.size();
+                int dist2 = o2.size();
                 int chebyshev1 = chebyshev(o1.peek(), goal);
                 int chebyshev2 = chebyshev(o2.peek(), goal);
 
                 if (chebyshev1 + dist1 == chebyshev2 + dist2) {
-                    int minCheb1 = minChebyshev(o1.peek(), goal);
-                    int minCheb2 = minChebyshev(o2.peek(), goal);
-                    return dist1 + minCheb1 < dist2 + minCheb2 ? -1 : 1;
+                    return 0;
                 }
 
                 return  dist1 + chebyshev1 < dist2 + chebyshev2 ? -1 : 1;
@@ -495,6 +494,23 @@ public class AstarAgent extends Agent {
         deltaY = deltaY < 0 ? deltaY * -1 : deltaY;
         
         return deltaX < deltaY ? deltaX : deltaY;
+    }
+
+    /**
+     * Checks the open list to see if a path already has reached the location
+     *
+     * @param openList  the open list
+     * @param location  the location
+     * @return          Whether there is already a path
+     */
+    private boolean alreadyPath(PriorityQueue<Stack<MapLocation>> openList, MapLocation location) {
+        for (Stack<MapLocation> path : openList) {
+            if (path.peek().equals(location)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
