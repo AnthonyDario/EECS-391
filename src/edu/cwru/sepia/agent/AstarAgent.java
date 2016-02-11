@@ -362,19 +362,18 @@ public class AstarAgent extends Agent {
 
                 for (MapLocation successor : successors) {
 
-                    if (openList.contains(successor)) {
-                        System.out.println("true");
-                    }
+                    // System.out.println(successor + " : " + enemyFootmanLoc);
 
                     if (successor != null  && !closedList.contains(successor) &&
                         !resourceLocations.contains(successor) && 
-                        !alreadyPath(openList, successor)) { 
+                        !alreadyPath(openList, successor) && 
+                        !successor.equals(enemyFootmanLoc)) { 
 
                         Stack<MapLocation> newPath = 
                             (Stack<MapLocation>)currentPath.clone();
                         newPath.push(successor);
                         openList.add(newPath);
-                    }
+                    } 
                 }
 
             }
