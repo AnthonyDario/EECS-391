@@ -246,12 +246,14 @@ public class AstarAgent extends Agent {
     private boolean shouldReplanPath(State.StateView state, History.HistoryView history, Stack<MapLocation> currentPath)
     {
 
+        // get the enemies location
         MapLocation footmanLoc = null;
         if(enemyFootmanID != -1) {
             Unit.UnitView enemyFootmanUnit = state.getUnit(enemyFootmanID);
             footmanLoc = new MapLocation(enemyFootmanUnit.getXPosition(), enemyFootmanUnit.getYPosition(), null, 0);
         }
         
+        // if the old path was better and no longer blocked then 
         if (oldPath != null && 
             oldPath.size() < currentPath.size() && 
             !oldPath.contains(footmanLoc)) {
@@ -259,29 +261,21 @@ public class AstarAgent extends Agent {
             return true;
         }
 
-        
+        // if our path is blocked for too long then replan 
         if (footmanLoc != null && currentPath.contains(footmanLoc)) {
-            //timesBlocked++;
-            
-            oldPath = currentPath;
-            return true;
-            /*
-            if ( timesBlocked > 2) {
+           
+            timesBlocked++;
+
+            if (timesBlocked > 2) {
                 oldPath = currentPath;
-                timesBlocked = 0;
                 return true;
+            } else {
+                return false;
             }
-            */
-        }
-        /*
-        if (!currentPath.isEmpty()) {
-            if (currentPath.peek().equals(footmanLoc)) {
-                return true;
-            }
-        }
-        */
-            
+        } 
+        timesBlocked = 0;
         return false;
+
     }
 
     /**
@@ -423,6 +417,7 @@ public class AstarAgent extends Agent {
         }
 
         // return the path
+        finalPath.pop();
         return finalPath;
     }
 
