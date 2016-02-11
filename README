@@ -1,0 +1,20 @@
+Anthony Dario ard74
+EECS 391
+Programming assignment 1
+
+This is an implementation of A* search in SEPIA. The agent uses A* search to 
+find a path to the town hall. When an enemy agent is on the field the agent will
+check if his path is blocked by the enemy agent three turns in a row. If the 
+enemy agent is in the way the agent will replan the path. The agent avoids 
+committing to a worse path by storing the old path and checking if it becomes 
+unblocked.
+
+My code is all contained within shouldReplanPath, AstarSearch, and various 
+private helper methods located below AstarSearch. Two class fields have been
+added timesBlocked, which keeps track of the number of times the agent has been
+blocked, and oldPath which stores the old path so the agent can check if it is
+open again. 
+
+MapLocation has also been updated with the hashCode(), and equals() functions
+to allow for convenient use in data structures. A toString() function was also
+added for debugging purposes.

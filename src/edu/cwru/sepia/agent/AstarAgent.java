@@ -275,7 +275,6 @@ public class AstarAgent extends Agent {
         } 
         timesBlocked = 0;
         return false;
-
     }
 
     /**
