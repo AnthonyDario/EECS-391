@@ -5,6 +5,7 @@
       <ClassName>edu.cwru.sepia.agent.AstarAgent</ClassName>
     </AgentClass>
   </Player>
+  <!--
   <Player Id="0">
     <AgentClass>
       <ClassName>edu.cwru.sepia.agent.visual.VisualAgent</ClassName>
@@ -12,6 +13,7 @@
       <Argument>false</Argument>
     </AgentClass>
   </Player>
+  -->
   <Player Id="1">
     <AgentClass>
       <ClassName>edu.cwru.sepia.agent.EnemyBlockerAgent</ClassName>

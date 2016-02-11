@@ -55,6 +55,9 @@ public class AstarAgent extends Agent {
 
     }
 
+    int timesBlocked = 0;
+    Stack<MapLocation> oldPath = null;
+
     Stack<MapLocation> path;
     int footmanID, townhallID, enemyFootmanID;
     MapLocation nextLoc;
@@ -242,9 +245,43 @@ public class AstarAgent extends Agent {
      */
     private boolean shouldReplanPath(State.StateView state, History.HistoryView history, Stack<MapLocation> currentPath)
     {
-        MapLocation nextMove = currentPath.peek();
-        return state.isUnitAt(nextMove.x, nextMove.y);
 
+        MapLocation footmanLoc = null;
+        if(enemyFootmanID != -1) {
+            Unit.UnitView enemyFootmanUnit = state.getUnit(enemyFootmanID);
+            footmanLoc = new MapLocation(enemyFootmanUnit.getXPosition(), enemyFootmanUnit.getYPosition(), null, 0);
+        }
+        
+        if (oldPath != null && 
+            oldPath.size() < currentPath.size() && 
+            !oldPath.contains(footmanLoc)) {
+            oldPath = currentPath;
+            return true;
+        }
+
+        
+        if (footmanLoc != null && currentPath.contains(footmanLoc)) {
+            //timesBlocked++;
+            
+            oldPath = currentPath;
+            return true;
+            /*
+            if ( timesBlocked > 2) {
+                oldPath = currentPath;
+                timesBlocked = 0;
+                return true;
+            }
+            */
+        }
+        /*
+        if (!currentPath.isEmpty()) {
+            if (currentPath.peek().equals(footmanLoc)) {
+                return true;
+            }
+        }
+        */
+            
+        return false;
     }
 
     /**
@@ -349,6 +386,7 @@ public class AstarAgent extends Agent {
 
             if (currentLoc.equals(goal)) {
                 // found the goal
+                currentPath.pop();
                 while (!currentPath.isEmpty()) {
                     finalPath.push(currentPath.pop());
                 }
